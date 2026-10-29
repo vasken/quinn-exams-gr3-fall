@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Exam Study Buddy
 
-## Getting Started
+An interactive, tablet-friendly study guide for the Cornerstone Montessori Grade 4.3 **Term 1** exams. It's built from the teacher's prep sheet, with a Grade 3 / Grade 4 toggle and Easy / Medium / Hard levels.
 
-First, run the development server:
+Built with Next.js 16, React 19, Tailwind CSS 4 and shadcn/ui.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000 (also reachable on your Wi-Fi)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**On a tablet:** keep the Mac and tablet on the same Wi-Fi, then open `http://<your-mac-ip>:3000` on the tablet. Get the IP with `ipconfig getifaddr en0`. In Safari, use **Share → Add to Home Screen** to open it full-screen like an app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For a faster, production-style server, run:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build && npm start
+```
 
-## Learn More
+**Deploy:** the app is fully static and has no secrets, so `npx vercel` works as-is.
 
-To learn more about Next.js, take a look at the following resources:
+## What's inside
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Subjects:** Language, Phonics & Spelling, Math, Financial Literacy, Coding, Social Studies, Maps & Topography, Science, and Christian Education.
+- **Each topic** has **Learn** cards you can swipe through, and **Practise** questions.
+- **Question types:** multiple choice, true/false, typing, sorting into boxes, matching, putting things in order, tapping word parts, tapping pictures (flower parts, contour map, town map, map of Canada), and a robot coding puzzle.
+- **Levels:**
+  - **Easy:** 6 questions, fewer choices, hints, and a second try.
+  - **Medium:** 8 questions, with more choices and some typing.
+  - **Hard:** 10 questions, with more typing, bigger numbers and no hints.
+- **Math questions** are generated fresh every round, matched to the selected grade.
+- **Stars** are saved on the device. Open **My stars** to see them, or to reset them.
+- **🔊 Read aloud** uses the tablet's built-in voice.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Editing content
 
-## Deploy on Vercel
+All content is in `src/content/`, with one file per subject.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Spelling words:** the prep sheet lists "Spelling words from lessons 1–5" but doesn't include the words. Put the real list in `src/content/spelling-words.ts`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run `npm test` after you edit. It checks that every answer is valid, that every robot puzzle can be solved, that the math is correct, and that each topic has enough questions for every level.

@@ -1,26 +1,273 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --color-highlight: var(--highlight);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #f6f7f9;
+  --foreground: #1f2a44;
+  --card: oklch(1 0 0);
+  --card-foreground: #1f2a44;
+  --popover: oklch(1 0 0);
+  --popover-foreground: #1f2a44;
+  --primary: #2f5bd3;
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: #eaf0fc;
+  --secondary-foreground: #24469f;
+  --muted: #eef1f5;
+  --muted-foreground: #5b6578;
+  --accent: #eaf0fc;
+  --accent-foreground: #24469f;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #dce2ec;
+  --input: #c9d1de;
+  --ring: #2f5bd3;
+  --good: #2e8b57;
+  --bad: #c2413a;
+  --highlight: #ffe38a;
+  --margin-line: #e8a0a0;
+    --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.875rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+  body {
+    overscroll-behavior-y: none;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+/* Pressable buttons: a small bottom edge gives tap feedback without shouting. */
+@utility chunky {
+  border-width: 2px;
+  border-bottom-width: 4px;
+  border-radius: 0.875rem;
+  transition: transform 80ms ease, border-bottom-width 80ms ease, background-color 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  &:active:not(:disabled) {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+    margin-bottom: 2px;
+  }
+  &:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Exercise-book page with a red margin line, used for Learn cards. */
+@utility margin-page {
+  background-color: #fff;
+  background-image: linear-gradient(to right, transparent 3.25rem, var(--margin-line) 3.25rem, var(--margin-line) calc(3.25rem + 2px), transparent calc(3.25rem + 2px));
+}
+
+/* Ruled lines that sit under each line of text (text must use a 2.25rem line height). */
+@utility rules {
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2.25rem - 1px), #e3e9f3 calc(2.25rem - 1px), #e3e9f3 2.25rem);
+}
+
+@utility pad-safe {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+@keyframes pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+@utility animate-pop {
+  animation: pop 280ms ease-out both;
+}
+@utility animate-shake {
+  animation: shake 360ms ease-in-out;
+}
+
+/* Figure feedback (SVG parts) */
+.fig-part[role="button"]:active {
+  opacity: 0.7;
+}
+.fig-right {
+  filter: drop-shadow(0 0 3px var(--good)) drop-shadow(0 0 6px var(--good));
+}
+.fig-right :is(path, ellipse, circle, rect)[stroke]:not([stroke="transparent"]) {
+  stroke: oklch(0.5 0.17 150);
+  stroke-width: 4px;
+}
+.fig-wrong {
+  filter: drop-shadow(0 0 3px var(--bad)) drop-shadow(0 0 6px var(--bad));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Sisters on the home page. SVG parts pivot on their own bounding box. */
+.sisters :is(.sis-bob, .sis-blink, .sis-wave, .sis-sway, .sis-tail-l, .sis-tail-r, .sis-hop) {
+  transform-box: fill-box;
+}
+.sis-bob { animation: sis-bob 2.6s ease-in-out infinite; }
+.sis-bob-quick { animation-duration: 1.9s; animation-delay: -0.6s; }
+.sis-blink { transform-origin: center; animation: sis-blink 4.2s infinite; }
+.sis-little .sis-blink { animation-delay: -1.7s; }
+.sis-wave { transform-origin: 0% 100%; animation: sis-wave 1.4s ease-in-out infinite; }
+.sis-sway { transform-origin: 50% 0%; animation: sis-sway 2.6s ease-in-out infinite; }
+.sis-sway-quick { animation-duration: 1.9s; animation-delay: -0.6s; }
+.sis-tail-l { transform-origin: 100% 15%; animation: sis-swing 1.9s ease-in-out infinite; }
+.sis-tail-r { transform-origin: 0% 15%; animation: sis-swing 1.9s ease-in-out infinite reverse; }
+.sis-hop { transform-origin: 50% 100%; animation: sis-hop 560ms ease-out; }
+.sis-little.sis-hop { animation-delay: 140ms; }
+
+@keyframes sis-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+@keyframes sis-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+@keyframes sis-wave {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes sis-sway {
+  0%, 100% { transform: skewX(-2deg); }
+  50% { transform: skewX(2deg); }
+}
+@keyframes sis-swing {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes sis-hop {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  15% { transform: translateY(0) scaleY(0.94); }
+  45% { transform: translateY(-16px) scaleY(1.03); }
+  80% { transform: translateY(0) scaleY(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sisters * { animation: none !important; }
 }

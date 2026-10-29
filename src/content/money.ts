@@ -1,0 +1,205 @@
+import type { Subject } from "./types";
+
+const smartSteps = [
+  "S – Similar prices",
+  "M – Money",
+  "A – Actual need",
+  "R – Reason / Value",
+  "T – Think before buying",
+];
+
+export const money: Subject = {
+  slug: "money",
+  title: "Financial Literacy",
+  emoji: "💰",
+  blurb: "Needs vs. wants & SMART choices",
+  tint: "bg-emerald-50 text-emerald-700",
+  topics: [
+    {
+      slug: "needs-wants",
+      title: "Needs vs. Wants",
+      emoji: "🛒",
+      learn: [
+        {
+          title: "Needs",
+          emoji: "🏠",
+          points: [
+            "A **need** is something you **must have to live** and be healthy and safe.",
+            "Examples: **food, water, shelter (a home), clothing, medicine**.",
+          ],
+        },
+        {
+          title: "Wants",
+          emoji: "🎮",
+          points: [
+            "A **want** is something that is **nice to have**, but you can live without it.",
+            "Examples: **toys, video games, candy, a new bike, a trip to the movies**.",
+          ],
+        },
+        {
+          title: "Tricky ones",
+          emoji: "🤔",
+          points: [
+            "A **winter coat** is a need in Canada! But a **designer** coat with a fancy logo is more of a want.",
+            "**Water** is a need. **Pop** is a want.",
+            "Ask yourself: **Could I live without it?**",
+          ],
+        },
+      ],
+      questions: [
+        {
+          id: "nw-sort",
+          type: "sort",
+          prompt: "Is it a need or a want?",
+          buckets: ["Need 🏠", "Want 🎮"],
+          items: [
+            { label: "🍎 healthy food", bucket: "Need 🏠" },
+            { label: "💧 water", bucket: "Need 🏠" },
+            { label: "🏠 a home", bucket: "Need 🏠" },
+            { label: "🧥 a winter coat", bucket: "Need 🏠" },
+            { label: "💊 medicine when sick", bucket: "Need 🏠" },
+            { label: "🎮 a video game", bucket: "Want 🎮" },
+            { label: "🍭 candy", bucket: "Want 🎮" },
+            { label: "🧸 a new toy", bucket: "Want 🎮" },
+            { label: "🎬 movie tickets", bucket: "Want 🎮" },
+            { label: "🚲 a shiny new bike", bucket: "Want 🎮" },
+          ],
+          pick: 6,
+        },
+        { id: "nw-1", type: "mcq", prompt: "Which of these is a **need**?", answer: "Shoes", wrong: ["A tablet", "Stickers", "A trampoline"] },
+        { id: "nw-2", type: "mcq", prompt: "Which of these is a **want**?", answer: "A new skateboard", wrong: ["Water", "A coat in winter", "Healthy food"] },
+        { id: "nw-3", type: "mcq", prompt: "A **need** is something…", answer: "you must have to live and be safe", wrong: ["you saw in an ad", "your friend has", "that is fun to play with"] },
+        { id: "nw-4", type: "mcq", prompt: "Which of these is a **want**?", answer: "A trip to the movies", wrong: ["A warm place to sleep", "Clean water", "Medicine when you are sick"] },
+        { id: "nw-tf", type: "tf", prompt: "Candy is a need.", answer: false },
+        {
+          id: "nw-tricky",
+          type: "mcq",
+          prompt: "Sam needs a warm coat for winter. Which choice shows a **need**, not a want?",
+          answer: "A warm, sturdy coat that fits",
+          wrong: ["The most expensive coat with a famous logo", "A coat just because a friend has one", "A third coat in a new colour"],
+          difficulty: ["medium", "hard"],
+        },
+      ],
+    },
+    {
+      slug: "smart",
+      title: "SMART Decisions",
+      emoji: "🧠",
+      learn: [
+        {
+          title: "Shop SMART!",
+          emoji: "🧠",
+          points: [
+            "**S – Similar prices:** What do similar products cost?",
+            "**M – Money:** Can I afford it?",
+            "**A – Actual need:** Do I need it, or do I just want it?",
+            "**R – Reason / Value:** Is it worth the money?",
+            "**T – Think before buying:** Should I wait and think about it first?",
+          ],
+        },
+        {
+          title: "Cheapest isn't always best",
+          emoji: "⭐",
+          points: [
+            "A good purchase is **not always the cheapest** purchase.",
+            "A good purchase gives you **good value for your money** and **meets your needs**.",
+            "Example: $5 shoes that rip in a week vs. $30 shoes that last all year. The $30 shoes are better **value**!",
+          ],
+        },
+      ],
+      questions: [
+        {
+          id: "sm-order",
+          type: "order",
+          prompt: "Put the SMART steps in order.",
+          items: smartSteps,
+        },
+        {
+          id: "sm-match",
+          type: "match",
+          prompt: "Match each SMART letter to its question.",
+          pairs: [
+            ["S – Similar prices", "What do similar products cost?"],
+            ["M – Money", "Can I afford it?"],
+            ["A – Actual need", "Do I need it, or just want it?"],
+            ["R – Reason / Value", "Is it worth the money?"],
+            ["T – Think before buying", "Should I wait and think first?"],
+          ],
+        },
+        {
+          id: "sm-1",
+          type: "mcq",
+          prompt: "Ava checks three stores to see what the same backpack costs. Which SMART step is she using?",
+          answer: "S – Similar prices",
+          wrong: smartSteps.filter((s) => !s.startsWith("S")),
+        },
+        {
+          id: "sm-2",
+          type: "mcq",
+          prompt: "Noah counts his savings to see if he has enough. Which SMART step is that?",
+          answer: "M – Money",
+          wrong: smartSteps.filter((s) => !s.startsWith("M")),
+        },
+        {
+          id: "sm-3",
+          type: "mcq",
+          prompt: "Lily asks herself, “Do I really need this, or do I just want it?” Which step?",
+          answer: "A – Actual need",
+          wrong: smartSteps.filter((s) => !s.startsWith("A")),
+        },
+        {
+          id: "sm-4",
+          type: "mcq",
+          prompt: "Omar decides to wait a week before buying a toy to see if he still wants it. Which step?",
+          answer: "T – Think before buying",
+          wrong: smartSteps.filter((s) => !s.startsWith("T")),
+        },
+        {
+          id: "sm-5",
+          type: "mcq",
+          prompt: "Zoe asks, “Will this last a long time? Is it worth it?” Which step?",
+          answer: "R – Reason / Value",
+          wrong: smartSteps.filter((s) => !s.startsWith("R")),
+          difficulty: ["medium", "hard"],
+        },
+        {
+          id: "sm-value",
+          type: "mcq",
+          prompt: "Which is the **best value** for a kid who plays soccer every week?",
+          answer: "$30 cleats that last all season",
+          wrong: ["$8 cleats that fall apart in 2 weeks", "$120 cleats with a famous player's name", "No cleats, just sandals"],
+        },
+        {
+          id: "sm-tf",
+          type: "tf",
+          prompt: "The cheapest thing is always the best thing to buy.",
+          answer: false,
+          explain: "A good purchase gives good value and meets your needs — it is not always the cheapest!",
+        },
+        {
+          id: "sm-afford",
+          type: "mcq",
+          prompt: "Mia has $15. A book costs $12 and a puzzle costs $18. What can she afford?",
+          answer: "The book",
+          wrong: ["The puzzle", "Both", "Neither"],
+          difficulty: ["medium", "hard"],
+        },
+        {
+          id: "sm-afford-2",
+          type: "typed",
+          numeric: true,
+          prompt: "Jay has $20. He buys a $13 water bottle. How many dollars does he have left?",
+          answer: "7",
+          difficulty: ["hard"],
+        },
+        {
+          id: "sm-good",
+          type: "mcq",
+          prompt: "What makes a purchase a **good** purchase?",
+          answer: "It gives good value and meets your needs",
+          wrong: ["It is the cheapest", "It is the most expensive", "Everyone else has it"],
+        },
+      ],
+    },
+  ],
+};
