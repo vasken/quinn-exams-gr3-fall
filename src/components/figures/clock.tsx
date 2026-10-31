@@ -31,8 +31,8 @@ export function Clock({ hour, half }: { hour: number; half?: boolean }) {
           </text>
         );
       })}
-      <line x1="100" y1="100" {...hand(((hour % 12) + (half ? 0.5 : 0)) / 12, 44)} stroke="#1c1917" strokeWidth="8" strokeLinecap="round" />
-      <line x1="100" y1="100" {...hand(half ? 0.5 : 0, 72)} stroke="#2f5bd3" strokeWidth="5" strokeLinecap="round" />
+      <line x1="100" y1="100" {...hand(((hour % 12) + (half ? 0.5 : 0)) / 12, 38)} stroke="#1c1917" strokeWidth="8" strokeLinecap="round" />
+      <line x1="100" y1="100" {...hand(half ? 0.5 : 0, 54)} stroke="#2f5bd3" strokeWidth="5" strokeLinecap="round" />
       <circle cx="100" cy="100" r="6" fill="#1c1917" />
     </svg>
   );

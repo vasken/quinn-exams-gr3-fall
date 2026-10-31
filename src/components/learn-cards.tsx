@@ -8,6 +8,7 @@ import { Figure } from "@/components/figures";
 import { plain, RichText } from "@/components/rich-text";
 import { SpeakButton } from "@/components/speak-button";
 import type { LearnCard } from "@/content/types";
+import { HAN } from "@/lib/mandarin";
 import { cn } from "@/lib/utils";
 
 export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCard[]; practiceHref: string; drillHref?: string }) {
@@ -15,6 +16,8 @@ export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCar
   const startX = useRef<number | null>(null);
   const card = cards[i];
   const last = i === cards.length - 1;
+  // Pinyin sits above Chinese characters, so those cards get taller ruled lines.
+  const rule = HAN.test(card.points.join("")) ? "3rem" : "2.25rem";
 
   const go = (d: number) => setI((n) => Math.min(cards.length - 1, Math.max(0, n + d)));
 
@@ -38,10 +41,10 @@ export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCar
           <h2 className="flex-1 text-[1.75rem] font-bold leading-[2.25rem] sm:text-3xl sm:leading-[2.25rem]">{plain(card.title)}</h2>
           <SpeakButton text={`${card.title}. ${card.points.join(". ")}`} />
         </div>
-        <ul className="rules flex flex-col">
+        <ul className="rules flex flex-col" style={{ "--rule": rule } as React.CSSProperties}>
           {card.points.map((p) => (
-            <li key={p} className="relative text-xl leading-[2.25rem]">
-              <span className="absolute top-[0.95rem] -left-[1.1rem] size-2 rounded-full bg-primary" />
+            <li key={p} className="relative text-xl leading-(--rule)">
+              <span className="absolute top-[calc(var(--rule)-1.3rem)] -left-[1.1rem] size-2 rounded-full bg-primary" />
               <RichText text={p} pinyin />
             </li>
           ))}

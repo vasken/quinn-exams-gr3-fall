@@ -28,9 +28,9 @@ export function Hanzi({ text, pinyin }: { text: string; pinyin?: boolean }) {
     <span lang="zh-CN">
       {pinyinOf(text).map(({ ch, py }, i) =>
         py ? (
-          <ruby key={i}>
+          <ruby key={i} className="mx-[0.08em]">
             {ch}
-            <rt className="text-[0.5em] font-normal text-muted-foreground">{py}</rt>
+            <rt className="text-[0.6em] font-normal text-muted-foreground">{py}</rt>
           </ruby>
         ) : (
           ch

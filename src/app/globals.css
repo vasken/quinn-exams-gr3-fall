@@ -175,9 +175,9 @@
   background-image: linear-gradient(to right, transparent 3.25rem, var(--margin-line) 3.25rem, var(--margin-line) calc(3.25rem + 2px), transparent calc(3.25rem + 2px));
 }
 
-/* Ruled lines that sit under each line of text (text must use a 2.25rem line height). */
+/* Ruled lines that sit under each line of text. Set --rule to the text's line height. */
 @utility rules {
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2.25rem - 1px), #e3e9f3 calc(2.25rem - 1px), #e3e9f3 2.25rem);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--rule) - 1px), #e3e9f3 calc(var(--rule) - 1px), #e3e9f3 var(--rule));
 }
 
 @utility pad-safe {
