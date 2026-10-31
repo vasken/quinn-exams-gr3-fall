@@ -10,7 +10,7 @@ import { SpeakButton } from "@/components/speak-button";
 import type { LearnCard } from "@/content/types";
 import { cn } from "@/lib/utils";
 
-export function LearnCards({ cards, practiceHref }: { cards: LearnCard[]; practiceHref: string }) {
+export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCard[]; practiceHref: string; drillHref?: string }) {
   const [i, setI] = useState(0);
   const startX = useRef<number | null>(null);
   const card = cards[i];
@@ -70,9 +70,16 @@ export function LearnCards({ cards, practiceHref }: { cards: LearnCard[]; practi
           ))}
         </div>
         {last ? (
-          <Link href={practiceHref} className={primaryButton}>
-            Practise
-          </Link>
+          <div className="flex gap-2">
+            {drillHref && (
+              <Link href={drillHref} className={secondaryButton}>
+                Speed test
+              </Link>
+            )}
+            <Link href={practiceHref} className={primaryButton}>
+              Practise
+            </Link>
+          </div>
         ) : (
           <button type="button" onClick={() => go(1)} className={primaryButton}>
             Next <ChevronRight className="size-6" />

@@ -4,12 +4,13 @@ import { language } from "./language";
 import { maps } from "./maps";
 import { math } from "./math";
 import { money } from "./money";
+import { music } from "./music";
 import { phonics } from "./phonics";
 import { science } from "./science";
 import { social } from "./social";
 import type { Subject, Topic } from "./types";
 
-export const subjects: Subject[] = [language, phonics, math, money, coding, social, maps, science, faith];
+export const subjects: Subject[] = [language, phonics, math, money, coding, social, maps, science, music, faith];
 
 export function getSubject(slug: string): Subject | undefined {
   return subjects.find((s) => s.slug === slug);

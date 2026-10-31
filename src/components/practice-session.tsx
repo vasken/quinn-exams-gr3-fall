@@ -162,7 +162,7 @@ function Session({
   }
 
   const { q } = item;
-  const sideFigure = q.type !== "tap" && q.type !== "robot" && (q.figure || q.passage);
+  const sideFigure = q.type !== "tap" && q.type !== "robot" && q.type !== "staff-write" && (q.figure || q.passage);
 
   return (
     <div className="pb-40">

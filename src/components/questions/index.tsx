@@ -7,6 +7,7 @@ import { ChoiceQuestion } from "./choice";
 import { RobotQuestion } from "./robot";
 import type { Prepared } from "@/lib/select-questions";
 import type { QProps, SubmitResult } from "./shared";
+import { StaffWriteQuestion } from "./staff-write";
 import { ReflectQuestion, TypedQuestion } from "./typed";
 
 export type { SubmitResult } from "./shared";
@@ -61,5 +62,7 @@ export function QuestionBody({ item, ...rest }: BodyProps) {
       return <TapQuestion item={{ ...item, q }} {...rest} />;
     case "robot":
       return <RobotQuestion item={{ ...item, q }} {...rest} />;
+    case "staff-write":
+      return <StaffWriteQuestion item={{ ...item, q }} {...rest} />;
   }
 }

@@ -31,7 +31,11 @@ async function Learn({ params }: Pick<PageProps<"/[subject]/[topic]">, "params">
     <>
       <AppHeader back={{ href: `/${subject.slug}`, label: subject.title }} title={topic.title} />
       <main className="pad-safe mx-auto w-full max-w-3xl pt-5">
-        <LearnCards cards={topic.learn} practiceHref={`/${subject.slug}/${topic.slug}/practice`} />
+        <LearnCards
+          cards={topic.learn}
+          practiceHref={`/${subject.slug}/${topic.slug}/practice`}
+          drillHref={topic.drill ? `/${subject.slug}/${topic.slug}/drill` : undefined}
+        />
       </main>
     </>
   );

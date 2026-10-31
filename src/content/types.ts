@@ -1,3 +1,5 @@
+import type { Acc, Clef, Pitch } from "@/lib/music";
+
 export type Difficulty = "easy" | "medium" | "hard";
 export type Grade = 3 | 4;
 
@@ -10,6 +12,35 @@ export type ScratchBlock =
   | { kind: "event" | "motion" | "looks" | "sound" | "pen"; text: string }
   | { kind: "repeat"; times: number; body: ScratchBlock[] };
 
+/** A note drawn on a staff. `pos` counts lines and spaces from middle C (C4 = 0). */
+export interface StaffNote {
+  /** Tap id (for questions that ask you to tap a note). */
+  id?: string;
+  pos: number;
+  acc?: Acc | "natural";
+  /** Which staff of a grand staff the note sits on. Default: treble if pos ≥ 0. */
+  staff?: Clef;
+  /** Filled note with a stem. No stem → a whole note. */
+  stem?: "up" | "down";
+  /** Default: right for up-stems, left for down-stems. */
+  stemSide?: "left" | "right";
+  /** In staff spaces. Default 3.5 (one octave). */
+  stemLen?: number;
+  crooked?: boolean;
+  /** A filled note head without a stem. */
+  filled?: boolean;
+  /** Text under the note (learn cards). */
+  label?: string;
+  /** Leave a gap of this many note columns before this note. */
+  gap?: number;
+}
+
+export interface KeyArc {
+  from: number;
+  to: number;
+  label: string;
+}
+
 export type Figure =
   | { id: "flower"; highlight?: string[] }
   | { id: "roots" }
@@ -20,7 +51,10 @@ export type Figure =
   | { id: "ad" }
   | { id: "bar-graph"; title: string; labels: string[]; values: number[]; unit?: string }
   | { id: "scratch"; blocks: ScratchBlock[] }
-  | { id: "emoji"; value: string };
+  | { id: "emoji"; value: string }
+  | { id: "staff"; clef: Clef | "grand"; notes?: StaffNote[]; parts?: boolean }
+  /** Two octaves from middle C. Keys are half steps above middle C (0–23). */
+  | { id: "keyboard"; keys?: number[]; arcs?: KeyArc[]; from?: number; to?: number };
 
 /* ---------- Questions ---------- */
 
@@ -108,6 +142,20 @@ export interface RobotQuestion extends QuestionBase {
   requireLoop?: boolean;
 }
 
+/** Tap the staff to draw a note. */
+export interface StaffWriteQuestion extends QuestionBase {
+  type: "staff-write";
+  clef: Clef;
+  /** Notes already on the staff (e.g. "a half step up from this note"). */
+  given?: StaffNote[];
+  /** Every accepted answer. The first is shown when revealing. */
+  answer: Pitch[];
+  /** Show ♯ / ♭ buttons. */
+  accidentals?: boolean;
+  /** Lowest and highest position you can tap. */
+  range: [number, number];
+}
+
 export interface ReflectQuestion extends QuestionBase {
   type: "reflect";
 }
@@ -124,6 +172,7 @@ export type Question =
   | WordPartsQuestion
   | TapQuestion
   | RobotQuestion
+  | StaffWriteQuestion
   | ReflectQuestion;
 
 /* ---------- Learning content ---------- */
@@ -149,6 +198,8 @@ export interface Topic {
   questions: Question[];
   /** Makes fresh questions each session (math). */
   generate?: (grade: Grade, difficulty: Difficulty, rng: Rng) => Question;
+  /** Has a one-minute note-naming speed test. */
+  drill?: boolean;
 }
 
 export interface Subject {

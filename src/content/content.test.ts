@@ -20,6 +20,15 @@ const TAP_IDS: Partial<Record<Figure["id"], string[]>> = {
   ad: ["logo", "headline", "picture", "slogan", "price"],
 };
 
+function tapIds(figure: Figure): string[] {
+  if (figure.id === "staff") {
+    const parts = figure.parts ? [figure.clef === "grand" ? ["treble", "bass"] : [figure.clef]].flat().flatMap((c) => [`${c}-clef`, `${c}-staff`]) : [];
+    if (figure.parts && figure.clef === "grand") parts.push("brace");
+    return [...parts, ...(figure.notes ?? []).flatMap((n) => (n.id ? [n.id] : []))];
+  }
+  return TAP_IDS[figure.id] ?? [];
+}
+
 describe("content", () => {
   it("every topic has learn cards", () => {
     for (const { s, t } of allTopics) expect(t.learn.length, `${s.slug}/${t.slug}`).toBeGreaterThan(0);
@@ -86,7 +95,7 @@ function checkQuestion(q: Question, where: string) {
       expect(q.target[1], where).toBeGreaterThan(q.target[0]);
       break;
     case "tap": {
-      const ids = TAP_IDS[q.figure.id] ?? [];
+      const ids = tapIds(q.figure);
       for (const a of [q.answer].flat()) expect(ids, where).toContain(a);
       break;
     }
@@ -95,6 +104,13 @@ function checkQuestion(q: Question, where: string) {
       break;
     case "typed":
       expect([q.answer].flat().length, where).toBeGreaterThan(0);
+      break;
+    case "staff-write":
+      expect(q.answer.length, where).toBeGreaterThan(0);
+      for (const a of q.answer) {
+        expect(a.pos, where).toBeGreaterThanOrEqual(q.range[0]);
+        expect(a.pos, where).toBeLessThanOrEqual(q.range[1]);
+      }
       break;
   }
 }

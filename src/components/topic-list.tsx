@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, PencilLine, Star } from "lucide-react";
+import { BookOpen, PencilLine, Star, Timer } from "lucide-react";
 import { primaryButton, secondaryButton } from "@/components/button-styles";
 import { getSubject, topicKey } from "@/content";
 import { useProgress } from "@/lib/progress";
@@ -57,6 +57,11 @@ export function TopicList({ subjectSlug }: { subjectSlug: string }) {
                 <Link href={`/${subject.slug}/${t.slug}/practice`} className={cn(primaryButton, "min-h-12 px-4")}>
                   <PencilLine className="size-5" /> Practise
                 </Link>
+                {t.drill && (
+                  <Link href={`/${subject.slug}/${t.slug}/drill`} className={cn(secondaryButton, "min-h-12 px-4")}>
+                    <Timer className="size-5" /> Speed test
+                  </Link>
+                )}
               </div>
             </li>
           );
