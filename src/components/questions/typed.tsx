@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { primaryButton, secondaryButton } from "@/components/button-styles";
+import { RichText } from "@/components/rich-text";
 import { typedCorrect } from "@/lib/select-questions";
 import { cn } from "@/lib/utils";
 import { CheckButton, type QProps } from "./shared";
@@ -14,7 +16,7 @@ export function TypedQuestion({ item, locked, onSubmit }: QProps<"typed">) {
 
   function check() {
     if (locked || !value.trim()) return;
-    const ok = typedCorrect(value, q.answer);
+    const ok = typedCorrect(value, q.answer, { pinyin: q.pinyin });
     const r = onSubmit(ok);
     if (!ok && r === "retry") {
       setShaking(true);
@@ -41,7 +43,7 @@ export function TypedQuestion({ item, locked, onSubmit }: QProps<"typed">) {
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="done"
-        placeholder={q.numeric ? "Type the number" : "Type your answer"}
+        placeholder={q.numeric ? "Type the number" : q.pinyin ? "Type the pinyin" : "Type your answer"}
         aria-label="Your answer"
         className={cn(
           "block w-full rounded-2xl border-2 bg-white px-5 py-4 text-center text-3xl font-bold tracking-wide outline-none transition-colors",
@@ -80,6 +82,40 @@ export function ReflectQuestion({ locked, onSubmit }: QProps<"reflect">) {
           <button type="button" className="mt-3 text-base text-muted-foreground underline underline-offset-4" onClick={() => onSubmit(true)}>
             I said it out loud instead
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Write the answer on paper, then show it and say whether you got it. */
+export function SelfCheckQuestion({ item, locked, onSubmit }: QProps<"selfcheck">) {
+  const [shown, setShown] = useState(false);
+  return (
+    <div>
+      {shown || locked ? (
+        <div className="rounded-2xl border bg-white p-5 text-center">
+          <div className="text-5xl font-bold leading-[1.6]">
+            <RichText text={item.q.answer} pinyin />
+          </div>
+          {!locked && (
+            <>
+              <p className="mt-4 text-lg text-muted-foreground">Does yours match?</p>
+              <div className="mt-3 flex flex-col justify-center gap-3 sm:flex-row">
+                <button type="button" onClick={() => onSubmit(true, true)} className={cn(primaryButton, "text-xl")}>
+                  Yes, I got it
+                </button>
+                <button type="button" onClick={() => onSubmit(false, true)} className={cn(secondaryButton, "text-xl")}>
+                  Not yet
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <p className="text-lg text-muted-foreground">Write it on paper first.</p>
+          <CheckButton label="Show the answer" onClick={() => setShown(true)} />
         </div>
       )}
     </div>

@@ -103,7 +103,11 @@ export function normalize(s: string) {
     .trim();
 }
 
-export function typedCorrect(input: string, answer: string | string[]) {
+/** Pinyin without spaces, tone marks or tone numbers: "Xīng qī yī" = "xingqiyi" = "xing1 qi1 yi1". */
+const pinyinKey = (s: string) => normalize(s).replace(/v/g, "u").replace(/[\s1-5']/g, "");
+
+export function typedCorrect(input: string, answer: string | string[], opts: { pinyin?: boolean } = {}) {
   const accepted = Array.isArray(answer) ? answer : [answer];
-  return accepted.some((a) => normalize(a) === normalize(input));
+  const key = opts.pinyin ? pinyinKey : normalize;
+  return accepted.some((a) => key(a) === key(input));
 }

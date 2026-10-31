@@ -42,7 +42,7 @@ export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCar
           {card.points.map((p) => (
             <li key={p} className="relative text-xl leading-[2.25rem]">
               <span className="absolute top-[0.95rem] -left-[1.1rem] size-2 rounded-full bg-primary" />
-              <RichText text={p} />
+              <RichText text={p} pinyin />
             </li>
           ))}
         </ul>

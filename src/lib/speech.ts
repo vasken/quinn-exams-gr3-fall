@@ -1,8 +1,9 @@
 "use client";
 
-import { audioUrl } from "./french-audio";
+import { audioUrl } from "./audio";
+import { ZH_RUN } from "./mandarin";
 
-type Lang = "en" | "fr";
+export type Lang = "en" | "fr" | "zh";
 
 const voices: Partial<Record<Lang, SpeechSynthesisVoice | null>> = {};
 
@@ -12,20 +13,25 @@ const NOVELTY = /eloquence|\b(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|
 const GOOD: Record<Lang, RegExp> = {
   fr: /am[ée]lie|thomas|chantal|audrey|aur[ée]lie|marie|google fran/i,
   en: /samantha|ava|allison|susan|karen|daniel|google/i,
+  zh: /tingting|ting-ting|lili|yu-shu|google 普通话|google.*chinese/i,
 };
+/** Each language's preferred accent: Canadian English and French, mainland Mandarin. */
+const REGION: Record<Lang, string> = { en: "ca", fr: "ca", zh: "cn" };
 
-/** Higher is better. Prefers downloaded high-quality voices, then well-known voices, then Canadian ones. */
+/** Higher is better. Prefers downloaded high-quality voices, then well-known voices, then the local accent. */
 export function scoreVoice(v: Pick<SpeechSynthesisVoice, "name" | "lang" | "voiceURI">, lang: Lang) {
   const code = v.lang.replace("_", "-").toLowerCase();
-  if (!code.startsWith(lang)) return -Infinity;
+  if (!code.startsWith(lang) && !(lang === "zh" && code.startsWith("cmn"))) return -Infinity;
   const id = `${v.name} ${v.voiceURI}`;
+  // Hong Kong voices speak Cantonese, not Mandarin.
+  if (lang === "zh" && (/-hk|yue/.test(code) || /cantonese|sinji/i.test(id))) return -Infinity;
   let score = 0;
   if (NOVELTY.test(id)) score -= 100;
   if (/premium/i.test(id)) score += 8;
   else if (/enhanced|neural|natural/i.test(id)) score += 6;
   else if (/compact/i.test(id)) score -= 2;
   if (GOOD[lang].test(id)) score += 4;
-  if (code === `${lang}-ca`) score += 2;
+  if (code === `${lang}-${REGION[lang]}`) score += 2;
   return score;
 }
 
@@ -44,8 +50,7 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
   window.speechSynthesis.getVoices();
   // Voices can arrive late or change (e.g. after downloading one): pick again.
   window.speechSynthesis.addEventListener?.("voiceschanged", () => {
-    delete voices.en;
-    delete voices.fr;
+    for (const k of Object.keys(voices)) delete voices[k as Lang];
   });
 }
 
@@ -55,9 +60,14 @@ export function canSpeak() {
 
 /** Strip emoji, markdown, French markers and blanks so the voice reads cleanly. */
 export function speakable(text: string, lang: Lang = "en") {
+  if (lang === "zh") {
+    // A fill-in blank is read as a short pause.
+    return text.replace(/（?_{2,}）?/g, "，").replace(/[（）]/g, "").replace(/\s+/g, "").replace(/^，+|，+(?=[，。？！]|$)/g, "");
+  }
   return text
     .replace(/\*\*/g, "")
     .replace(/[{}]/g, "")
+    .replace(/\[\[[^\]]*\]\]/g, " ")
     .replace(/_{2,}/g, lang === "fr" ? ", " : " blank ")
     .replace(/\p{Extended_Pictographic}|️/gu, "")
     .replace(/\s+/g, " ")
@@ -65,11 +75,20 @@ export function speakable(text: string, lang: Lang = "en") {
     .trim();
 }
 
-/** Split text into English and French parts. French is wrapped in {braces}. */
+/**
+ * Split text into English, French and Mandarin parts. French is wrapped in {braces}; Chinese characters
+ * are found on their own. [[Pinyin]] is only for reading on screen, so it is left out.
+ */
 export function speechParts(text: string): { lang: Lang; text: string }[] {
   return text
     .split(/(\{[^}]+\})/g)
-    .map((part) => (part.startsWith("{") && part.endsWith("}") ? { lang: "fr" as const, text: speakable(part, "fr") } : { lang: "en" as const, text: speakable(part) }))
+    .flatMap((part): { lang: Lang; text: string }[] => {
+      if (part.startsWith("{") && part.endsWith("}")) return [{ lang: "fr" as const, text: speakable(part, "fr") }];
+      return part
+        .replace(/\[\[[^\]]*\]\]/g, " ")
+        .split(ZH_RUN)
+        .map((p, i) => (i % 2 ? { lang: "zh" as const, text: speakable(p, "zh") } : { lang: "en" as const, text: speakable(p) }));
+    })
     .filter((p) => /[\p{L}\p{N}]/u.test(p.text));
 }
 
@@ -81,14 +100,14 @@ let unlocked = false;
 const live = new Set<SpeechSynthesisUtterance>();
 
 /**
- * Reads text aloud: English with the browser voice, {French} from the recordings in public/fr/
- * (browser French voices are unreliable: some browsers read them with the English voice).
+ * Reads text aloud: English with the browser voice, French and Mandarin from the recordings in public/fr/
+ * and public/zh/ (browser voices for them are unreliable: some browsers read them with the English voice).
  */
 export function speak(text: string) {
   if (!canSpeak()) return;
   stopSpeaking();
   const mine = ticket;
-  const parts = speechParts(text).map((p) => ({ ...p, url: p.lang === "fr" ? audioUrl(p.text) : null }));
+  const parts = speechParts(text).map((p) => ({ ...p, url: p.lang === "en" ? null : audioUrl(p.text, p.lang) }));
   // iPads only allow audio started by a tap, so start the player now even if English comes first.
   const firstClip = parts.find((p) => p.url)?.url;
   const ready = Promise.all([firstClip ? unlock(firstClip) : null, parts.some((p) => !p.url) ? voicesReady() : null]);
@@ -159,8 +178,8 @@ function utter(text: string, lang: Lang): Promise<void> {
     const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice(lang);
     if (v) u.voice = v;
-    u.lang = v?.lang ?? (lang === "fr" ? "fr-CA" : "en-CA");
-    u.rate = lang === "fr" ? 0.8 : 0.9;
+    u.lang = v?.lang ?? { en: "en-CA", fr: "fr-CA", zh: "zh-CN" }[lang];
+    u.rate = lang === "en" ? 0.9 : 0.8;
     // Safety net in case the browser never reports the end.
     const timer = setTimeout(() => resolve(), 4000 + text.length * 150);
     u.onend = u.onerror = () => {

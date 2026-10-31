@@ -54,7 +54,9 @@ export type Figure =
   | { id: "emoji"; value: string }
   | { id: "staff"; clef: Clef | "grand"; notes?: StaffNote[]; parts?: boolean }
   /** Two octaves from middle C. Keys are half steps above middle C (0–23). */
-  | { id: "keyboard"; keys?: number[]; arcs?: KeyArc[]; from?: number; to?: number };
+  | { id: "keyboard"; keys?: number[]; arcs?: KeyArc[]; from?: number; to?: number }
+  /** A clock face showing o'clock or half past. */
+  | { id: "clock"; hour: number; half?: boolean };
 
 /* ---------- Questions ---------- */
 
@@ -93,6 +95,8 @@ export interface TypedQuestion extends QuestionBase {
   /** Accepted answers (case/space/comma-insensitive). */
   answer: string | string[];
   numeric?: boolean;
+  /** Pinyin: spaces, tone marks and tone numbers are ignored. */
+  pinyin?: boolean;
   /** Hide the answer word in the prompt for spelling. */
   placeholder?: string;
 }
@@ -115,8 +119,10 @@ export interface MatchQuestion extends QuestionBase {
 
 export interface OrderQuestion extends QuestionBase {
   type: "order";
-  /** Items in the correct order. */
+  /** Items in the correct order (they may repeat, like the characters of 二十二). */
   items: string[];
+  /** Build a word: tiles go side by side, like the characters of 二十三号. */
+  row?: boolean;
 }
 
 export interface WordPartsQuestion extends QuestionBase {
@@ -160,6 +166,12 @@ export interface ReflectQuestion extends QuestionBase {
   type: "reflect";
 }
 
+/** Write the answer on paper, then show it and mark yourself (for writing Chinese characters). */
+export interface SelfCheckQuestion extends QuestionBase {
+  type: "selfcheck";
+  answer: string;
+}
+
 export type Dir = "N" | "E" | "S" | "W";
 
 export type Question =
@@ -173,7 +185,8 @@ export type Question =
   | TapQuestion
   | RobotQuestion
   | StaffWriteQuestion
-  | ReflectQuestion;
+  | ReflectQuestion
+  | SelfCheckQuestion;
 
 /* ---------- Learning content ---------- */
 

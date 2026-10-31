@@ -1,5 +1,6 @@
 import type { Figure as FigureData } from "@/content/types";
 import { CanadaMap } from "./canada";
+import { Clock } from "./clock";
 import { Contour } from "./contour";
 import { Flower } from "./flower";
 import { Keyboard } from "./keyboard";
@@ -36,5 +37,7 @@ export function Figure({ figure, ...props }: FigureProps & { figure: FigureData 
       return <StaffView {...props} clef={figure.clef} notes={figure.notes} parts={figure.parts} />;
     case "keyboard":
       return <Keyboard keys={figure.keys} arcs={figure.arcs} from={figure.from} to={figure.to} />;
+    case "clock":
+      return <Clock hour={figure.hour} half={figure.half} />;
   }
 }

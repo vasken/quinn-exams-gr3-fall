@@ -237,7 +237,7 @@ function Session({
               <p className="text-2xl font-bold">{message}</p>
               {locked && q.explain && (
                 <p className="mt-1 text-lg">
-                  <RichText text={q.explain} />
+                  <RichText text={q.explain} pinyin />
                 </p>
               )}
               </div>

@@ -8,7 +8,7 @@ import { RobotQuestion } from "./robot";
 import type { Prepared } from "@/lib/select-questions";
 import type { QProps, SubmitResult } from "./shared";
 import { StaffWriteQuestion } from "./staff-write";
-import { ReflectQuestion, TypedQuestion } from "./typed";
+import { ReflectQuestion, SelfCheckQuestion, TypedQuestion } from "./typed";
 
 export type { SubmitResult } from "./shared";
 
@@ -50,6 +50,8 @@ export function QuestionBody({ item, ...rest }: BodyProps) {
       return <TypedQuestion item={{ ...item, q }} {...rest} />;
     case "reflect":
       return <ReflectQuestion item={{ ...item, q }} {...rest} />;
+    case "selfcheck":
+      return <SelfCheckQuestion item={{ ...item, q }} {...rest} />;
     case "sort":
       return <SortQuestion item={{ ...item, q }} {...rest} />;
     case "match":

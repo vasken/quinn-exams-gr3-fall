@@ -210,49 +210,74 @@ export function MatchQuestion({ item, locked, onSubmit }: QProps<"match">) {
 
 export function OrderQuestion({ item, locked, onSubmit }: QProps<"order">) {
   const { q } = item;
-  const [seq, setSeq] = useState<string[]>([]);
-  const pool = (item.shuffled ?? q.items).filter((s) => !seq.includes(s));
+  const tiles = item.shuffled ?? q.items;
+  // Positions in `tiles`, so repeated items (二十二) stay separate.
+  const [seq, setSeq] = useState<number[]>([]);
+  const pool = tiles.map((s, i) => ({ s, i })).filter(({ i }) => !seq.includes(i));
+  const placed = seq.map((i) => tiles[i]);
 
   function check() {
-    const ok = seq.every((s, i) => s === q.items[i]);
+    const ok = placed.every((s, i) => s === q.items[i]);
     const r = onSubmit(ok);
     if (!ok && r === "retry") {
       // Keep the correct start, send the rest back.
       let k = 0;
-      while (seq[k] === q.items[k]) k++;
+      while (placed[k] === q.items[k]) k++;
       setSeq(seq.slice(0, k));
     }
   }
 
+  const take = (n: number) => !locked && setSeq(seq.filter((_, k) => k !== n));
+  const state = (n: number): TileState => (locked ? (placed[n] === q.items[n] ? "right" : "wrong") : "idle");
+
   return (
     <div>
-      {!locked && <Instruction>Tap them in the right order. Tap a placed one to take it back.</Instruction>}
-      <ol className="mb-4 flex flex-col gap-2">
-        {q.items.map((_, i) => {
-          const s = seq[i];
-          return (
-            <li key={i} className="flex items-center gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-white text-lg font-bold text-muted-foreground">{i + 1}</span>
-              {s ? (
-                <Tile
-                  state={locked ? (s === q.items[i] ? "right" : "wrong") : "idle"}
-                  className="flex-1 text-left text-base sm:text-lg"
-                  onClick={() => !locked && setSeq(seq.filter((x) => x !== s))}
-                >
-                  {s}
-                  {locked && s !== q.items[i] && <span className="block text-sm font-normal">→ {q.items[i]}</span>}
+      {!locked && (
+        <Instruction>{q.row ? "Tap the tiles in order to build it. Tap a placed one to take it back." : "Tap them in the right order. Tap a placed one to take it back."}</Instruction>
+      )}
+      {q.row ? (
+        <div className="mb-4">
+          <div lang="zh-CN" className="flex flex-wrap justify-center gap-2">
+            {q.items.map((_, n) =>
+              placed[n] ? (
+                <Tile key={n} state={state(n)} className="size-16 px-0 text-3xl" onClick={() => take(n)}>
+                  {placed[n]}
                 </Tile>
               ) : (
-                <div className="min-h-14 flex-1 rounded-[0.875rem] border-2 border-dashed border-input" />
-              )}
-            </li>
-          );
-        })}
-      </ol>
+                <div key={n} className="size-16 rounded-[0.875rem] border-2 border-dashed border-input" />
+              ),
+            )}
+          </div>
+          {locked && placed.some((s, n) => s !== q.items[n]) && (
+            <p lang="zh-CN" className="mt-3 text-center text-2xl font-bold text-good">
+              Answer: <span className="rounded-md bg-highlight px-2 text-foreground">{q.items.join("")}</span>
+            </p>
+          )}
+        </div>
+      ) : (
+        <ol className="mb-4 flex flex-col gap-2">
+          {q.items.map((_, n) => {
+            const s = placed[n];
+            return (
+              <li key={n} className="flex items-center gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-white text-lg font-bold text-muted-foreground">{n + 1}</span>
+                {s ? (
+                  <Tile state={state(n)} className="flex-1 text-left text-base sm:text-lg" onClick={() => take(n)}>
+                    {s}
+                    {locked && s !== q.items[n] && <span className="block text-sm font-normal">→ {q.items[n]}</span>}
+                  </Tile>
+                ) : (
+                  <div className="min-h-14 flex-1 rounded-[0.875rem] border-2 border-dashed border-input" />
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
       {!locked && (
-        <div className="flex flex-wrap justify-center gap-2">
-          {pool.map((s) => (
-            <Tile key={s} onClick={() => setSeq([...seq, s])} className="text-base sm:text-lg">
+        <div lang={q.row ? "zh-CN" : undefined} className="flex flex-wrap justify-center gap-2">
+          {pool.map(({ s, i }) => (
+            <Tile key={i} onClick={() => setSeq([...seq, i])} className={q.row ? "size-16 px-0 text-3xl" : "text-base sm:text-lg"}>
               {s}
             </Tile>
           ))}

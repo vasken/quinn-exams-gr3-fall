@@ -5,6 +5,7 @@ import { DIFFICULTIES, GRADES, type Figure, type Question } from "@/content/type
 import { seeded } from "@/lib/random";
 import { solve } from "@/lib/robot";
 import { buildSession, fits, topicVisible, typedCorrect } from "@/lib/select-questions";
+import { missingPinyin } from "@/lib/mandarin";
 import { speechParts } from "@/lib/speech";
 
 const allTopics = subjects.flatMap((s) => s.topics.map((t) => ({ s, t })));
@@ -90,6 +91,36 @@ describe("content", () => {
     expect([...new Set(leaks)]).toEqual([]);
   });
 
+  it("has pinyin for every Chinese character", () => {
+    const mandarin = subjects.find((s) => s.slug === "mandarin")!;
+    const text: string[] = [];
+    const walk = (v: unknown): void => {
+      if (typeof v === "string") text.push(v);
+      else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") Object.values(v).forEach(walk);
+    };
+    for (const t of mandarin.topics) {
+      walk({ learn: t.learn, questions: t.questions });
+      const rng = seeded(5);
+      for (const d of DIFFICULTIES) for (let i = 0; t.generate && i < 300; i++) walk(t.generate(3, d, rng));
+    }
+    expect([...new Set(text.flatMap(missingPinyin))]).toEqual([]);
+  });
+
+  it("wraps pinyin in [[ ]] so the English voice skips it", () => {
+    const TONED = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü]/;
+    const mandarin = subjects.find((s) => s.slug === "mandarin")!;
+    const spoken: string[] = [];
+    for (const t of mandarin.topics) {
+      for (const c of t.learn) spoken.push(c.title, ...c.points);
+      for (const q of t.questions) spoken.push(q.say ?? q.prompt, q.passage ?? "");
+      const rng = seeded(5);
+      for (const d of DIFFICULTIES) for (let i = 0; t.generate && i < 200; i++) spoken.push(t.generate(3, d, rng).prompt);
+    }
+    const leaks = spoken.flatMap((text) => speechParts(text).filter((p) => p.lang === "en" && TONED.test(p.text)).map((p) => p.text));
+    expect([...new Set(leaks)]).toEqual([]);
+  });
+
   it("leaves out topics crossed off the prep sheet", () => {
     const text = JSON.stringify(subjects).toLowerCase();
     for (const word of ["fraction", "mixed number", "endangered", "extinct", "deforestation", "oil spill"]) {
@@ -115,7 +146,11 @@ function checkQuestion(q: Question, where: string) {
       expect(new Set(q.pairs.map((p) => p[1])).size, where).toBe(q.pairs.length);
       break;
     case "order":
-      expect(new Set(q.items).size, where).toBe(q.items.length);
+      // Repeats are fine when building a word (二十二号), not in a list.
+      if (!q.row) expect(new Set(q.items).size, where).toBe(q.items.length);
+      break;
+    case "selfcheck":
+      expect(q.answer.length, where).toBeGreaterThan(0);
       break;
     case "wordparts":
       expect(q.target[0], where).toBeGreaterThanOrEqual(0);
@@ -190,5 +225,13 @@ describe("typed answers", () => {
     expect(typedCorrect("quatre vingt dix", "quatre-vingt-dix")).toBe(true);
     expect(typedCorrect("J’ai", "j'ai")).toBe(true);
     expect(typedCorrect("quatre", "quarante")).toBe(false);
+  });
+
+  it("checks pinyin without spaces or tones", () => {
+    const o = { pinyin: true };
+    expect(typedCorrect("xingqiyi", "xīng qī yī", o)).toBe(true);
+    expect(typedCorrect("Xing1 qi1 yi1", "xīng qī yī", o)).toBe(true);
+    expect(typedCorrect("xīngqīyī", "xīng qī yī", o)).toBe(true);
+    expect(typedCorrect("xingqier", "xīng qī yī", o)).toBe(false);
   });
 });
