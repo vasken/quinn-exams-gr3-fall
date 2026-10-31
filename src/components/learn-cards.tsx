@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { primaryButton, secondaryButton } from "@/components/button-styles";
 import { Figure } from "@/components/figures";
-import { RichText } from "@/components/rich-text";
+import { plain, RichText } from "@/components/rich-text";
 import { SpeakButton } from "@/components/speak-button";
 import type { LearnCard } from "@/content/types";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ export function LearnCards({ cards, practiceHref, drillHref }: { cards: LearnCar
       {/* A page from an exercise book: ruled lines, red margin. */}
       <article key={i} className="margin-page overflow-hidden rounded-2xl border pt-6 pr-5 pb-7 pl-[4.75rem] sm:pr-8">
         <div className="mb-3 flex items-start gap-3">
-          <h2 className="flex-1 text-[1.75rem] font-bold leading-[2.25rem] sm:text-3xl sm:leading-[2.25rem]">{card.title}</h2>
+          <h2 className="flex-1 text-[1.75rem] font-bold leading-[2.25rem] sm:text-3xl sm:leading-[2.25rem]">{plain(card.title)}</h2>
           <SpeakButton text={`${card.title}. ${card.points.join(". ")}`} />
         </div>
         <ul className="rules flex flex-col">

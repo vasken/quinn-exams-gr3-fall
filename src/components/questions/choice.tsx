@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { plain } from "@/components/rich-text";
 import { cn } from "@/lib/utils";
 import { type QProps, Tile } from "./shared";
 
@@ -40,7 +41,7 @@ export function ChoiceQuestion({ item, locked, onSubmit }: QProps<"mcq" | "tf">)
             disabled={locked || struck.includes(c)}
             className={cn(q.type === "tf" && "text-2xl", struck.includes(c) && "line-through")}
           >
-            {q.type === "tf" ? (c === "True" ? "👍 True" : "👎 False") : c}
+            {q.type === "tf" ? (c === "True" ? "👍 True" : "👎 False") : plain(c)}
           </Tile>
         );
       })}

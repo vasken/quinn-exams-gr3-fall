@@ -92,6 +92,10 @@ export function buildSession(
 export function normalize(s: string) {
   return s
     .toLowerCase()
+    // French: accents are optional and "quatre-vingts" = "quatre vingts".
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/(\p{L})-(?=\p{L})/gu, "$1 ")
     .replace(/[’‘]/g, "'")
     .replace(/(\d),(\d)/g, "$1$2")
     .replace(/[.!?]+$/g, "")

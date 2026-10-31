@@ -5,6 +5,7 @@ import { DIFFICULTIES, GRADES, type Figure, type Question } from "@/content/type
 import { seeded } from "@/lib/random";
 import { solve } from "@/lib/robot";
 import { buildSession, fits, topicVisible, typedCorrect } from "@/lib/select-questions";
+import { speechParts } from "@/lib/speech";
 
 const allTopics = subjects.flatMap((s) => s.topics.map((t) => ({ s, t })));
 const allQuestions = allTopics.flatMap(({ s, t }) => t.questions.map((q) => ({ s, t, q })));
@@ -60,6 +61,33 @@ describe("content", () => {
       const where = `${s.slug}/${t.slug}/${q.id}`;
       checkQuestion(q, where);
     }
+  });
+
+  it("closes every {French} marker", () => {
+    const bad: string[] = [];
+    const walk = (v: unknown): void => {
+      if (typeof v === "string") {
+        if (!/^(?:[^{}]|\{[^{}]+\})*$/.test(v)) bad.push(v);
+      } else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") Object.values(v).forEach(walk);
+    };
+    for (const { t } of allTopics) walk({ learn: t.learn, questions: t.questions });
+    expect(bad).toEqual([]);
+  });
+
+  it("marks French with {braces} so the French voice reads it", () => {
+    // French-looking words left in the English parts would be mangled by the English voice.
+    const FRENCH = /[àâçéèêëîïôûùüœ]|\b(le|la|les|l'|un|une|et|du|des|je|j'|tu|il|elle|nous|vous|ils|elles|est|sont|ai|avons|avez|ont|suis|sommes|avoir|être|fait|ans|mois|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|janvier|avril|mai|juin|juillet|septembre|octobre|novembre|di)\b/i;
+    const french = subjects.find((s) => s.slug === "french")!;
+    const spoken: string[] = [];
+    for (const t of french.topics) {
+      for (const c of t.learn) spoken.push(c.title, ...c.points);
+      for (const q of t.questions) spoken.push(q.say ?? q.prompt, q.passage ?? "");
+      const rng = seeded(5);
+      for (const d of DIFFICULTIES) for (let i = 0; t.generate && i < 100; i++) spoken.push(t.generate(3, d, rng).prompt);
+    }
+    const leaks = spoken.flatMap((text) => speechParts(text).filter((p) => p.lang === "en" && FRENCH.test(p.text)).map((p) => p.text));
+    expect([...new Set(leaks)]).toEqual([]);
   });
 
   it("leaves out topics crossed off the prep sheet", () => {
@@ -154,5 +182,13 @@ describe("typed answers", () => {
     expect(typedCorrect("you’re", "you're")).toBe(true);
     expect(typedCorrect("Canadian Shield.", ["the Canadian Shield", "Canadian Shield"])).toBe(true);
     expect(typedCorrect("hart", "heart")).toBe(false);
+  });
+
+  it("ignores French accents and hyphens", () => {
+    expect(typedCorrect("fevrier", "février")).toBe(true);
+    expect(typedCorrect("Aout", "août")).toBe(true);
+    expect(typedCorrect("quatre vingt dix", "quatre-vingt-dix")).toBe(true);
+    expect(typedCorrect("J’ai", "j'ai")).toBe(true);
+    expect(typedCorrect("quatre", "quarante")).toBe(false);
   });
 });

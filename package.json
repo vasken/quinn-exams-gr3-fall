@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "audio:french": "vite-node --config vitest.config.ts scripts/french-audio.ts"
   },
   "dependencies": {
     "@svg-maps/canada": "^2.0.0",

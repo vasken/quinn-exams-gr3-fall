@@ -41,9 +41,12 @@ function SubjectTile({ subject }: { subject: Subject }) {
 }
 
 export function SubjectGrid() {
+  const settings = useSettings();
+  // Before settings load, show everything so server and client match.
+  const shown = settings ? subjects.filter((s) => s.topics.some((t) => topicVisible(t, settings.grade))) : subjects;
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {subjects.map((s) => (
+      {shown.map((s) => (
         <SubjectTile key={s.slug} subject={s} />
       ))}
     </div>

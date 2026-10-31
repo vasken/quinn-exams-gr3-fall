@@ -29,7 +29,9 @@ export function ProgressTable() {
 
   return (
     <div className="flex flex-col gap-5">
-      {subjects.map((s) => (
+      {subjects
+        .filter((s) => s.topics.some((t) => topicVisible(t, settings.grade)))
+        .map((s) => (
         <section key={s.slug} className="overflow-hidden rounded-2xl border bg-white">
           <h2 className="flex items-center gap-3 border-b px-4 py-3 text-xl font-bold">
             <span className={cn("flex size-10 items-center justify-center rounded-lg text-2xl", s.tint)}>{s.emoji}</span>

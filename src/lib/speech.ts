@@ -1,45 +1,182 @@
 "use client";
 
-let voice: SpeechSynthesisVoice | null | undefined;
+import { audioUrl } from "./french-audio";
 
-function pickVoice() {
-  if (voice !== undefined) return voice;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return null; // not loaded yet; try again next time
-  voice =
-    voices.find((v) => v.lang === "en-CA") ??
-    voices.find((v) => v.lang === "en-US" && /samantha|google/i.test(v.name)) ??
-    voices.find((v) => v.lang.startsWith("en")) ??
-    null;
-  return voice;
+type Lang = "en" | "fr";
+
+const voices: Partial<Record<Lang, SpeechSynthesisVoice | null>> = {};
+
+/** Apple's joke and robot voices (listed in every language on recent Macs and iPads). */
+const NOVELTY = /eloquence|\b(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|albert|bahh|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|bad news|good news)\b/i;
+/** Natural-sounding voices that are known to be good. */
+const GOOD: Record<Lang, RegExp> = {
+  fr: /am[ée]lie|thomas|chantal|audrey|aur[ée]lie|marie|google fran/i,
+  en: /samantha|ava|allison|susan|karen|daniel|google/i,
+};
+
+/** Higher is better. Prefers downloaded high-quality voices, then well-known voices, then Canadian ones. */
+export function scoreVoice(v: Pick<SpeechSynthesisVoice, "name" | "lang" | "voiceURI">, lang: Lang) {
+  const code = v.lang.replace("_", "-").toLowerCase();
+  if (!code.startsWith(lang)) return -Infinity;
+  const id = `${v.name} ${v.voiceURI}`;
+  let score = 0;
+  if (NOVELTY.test(id)) score -= 100;
+  if (/premium/i.test(id)) score += 8;
+  else if (/enhanced|neural|natural/i.test(id)) score += 6;
+  else if (/compact/i.test(id)) score -= 2;
+  if (GOOD[lang].test(id)) score += 4;
+  if (code === `${lang}-ca`) score += 2;
+  return score;
+}
+
+function pickVoice(lang: Lang) {
+  if (voices[lang] !== undefined) return voices[lang];
+  const all = window.speechSynthesis.getVoices();
+  if (!all.length) return null; // not loaded yet; try again next time
+  const ranked = all.map((v) => ({ v, s: scoreVoice(v, lang) })).filter((x) => x.s > -Infinity);
+  ranked.sort((a, b) => b.s - a.s);
+  voices[lang] = ranked[0]?.v ?? null;
+  return voices[lang];
+}
+
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  // Ask now so Chrome starts loading its voices before the first tap.
+  window.speechSynthesis.getVoices();
+  // Voices can arrive late or change (e.g. after downloading one): pick again.
+  window.speechSynthesis.addEventListener?.("voiceschanged", () => {
+    delete voices.en;
+    delete voices.fr;
+  });
 }
 
 export function canSpeak() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
-/** Strip emoji, markdown and blanks so the voice reads cleanly. */
-export function speakable(text: string) {
+/** Strip emoji, markdown, French markers and blanks so the voice reads cleanly. */
+export function speakable(text: string, lang: Lang = "en") {
   return text
     .replace(/\*\*/g, "")
-    .replace(/_{2,}/g, " blank ")
+    .replace(/[{}]/g, "")
+    .replace(/_{2,}/g, lang === "fr" ? ", " : " blank ")
     .replace(/\p{Extended_Pictographic}|️/gu, "")
     .replace(/\s+/g, " ")
+    .replace(/([.!?…:])\s*\.(?!\.)/g, "$1")
     .trim();
 }
 
+/** Split text into English and French parts. French is wrapped in {braces}. */
+export function speechParts(text: string): { lang: Lang; text: string }[] {
+  return text
+    .split(/(\{[^}]+\})/g)
+    .map((part) => (part.startsWith("{") && part.endsWith("}") ? { lang: "fr" as const, text: speakable(part, "fr") } : { lang: "en" as const, text: speakable(part) }))
+    .filter((p) => /[\p{L}\p{N}]/u.test(p.text));
+}
+
+/** Bumped on every speak/stop, so a reading that was replaced stops. */
+let ticket = 0;
+let player: HTMLAudioElement | null = null;
+let unlocked = false;
+/** Chrome can drop `end` events for utterances that get garbage-collected, so hold on to them. */
+const live = new Set<SpeechSynthesisUtterance>();
+
+/**
+ * Reads text aloud: English with the browser voice, {French} from the recordings in public/fr/
+ * (browser French voices are unreliable: some browsers read them with the English voice).
+ */
 export function speak(text: string) {
   if (!canSpeak()) return;
+  stopSpeaking();
+  const mine = ticket;
+  const parts = speechParts(text).map((p) => ({ ...p, url: p.lang === "fr" ? audioUrl(p.text) : null }));
+  // iPads only allow audio started by a tap, so start the player now even if English comes first.
+  const firstClip = parts.find((p) => p.url)?.url;
+  const ready = Promise.all([firstClip ? unlock(firstClip) : null, parts.some((p) => !p.url) ? voicesReady() : null]);
+  void ready.then(async () => {
+    for (const part of parts) {
+      if (mine !== ticket) return;
+      if (part.url && (await playClip(part.url))) continue;
+      if (mine !== ticket) return;
+      await utter(part.text, part.lang);
+    }
+  });
+}
+
+function getPlayer() {
+  player ??= new Audio();
+  return player;
+}
+
+async function unlock(url: string) {
+  if (unlocked) return;
+  const el = getPlayer();
+  el.src = url;
+  el.muted = true;
+  try {
+    await el.play();
+    el.pause();
+    unlocked = true;
+  } catch {
+    // Not allowed yet: the clip will fall back to the browser voice.
+  }
+  el.muted = false;
+}
+
+/** Plays a recording to the end. False if it could not play. */
+function playClip(url: string): Promise<boolean> {
+  const el = getPlayer();
+  return new Promise((resolve) => {
+    const done = (ok: boolean) => {
+      el.onended = el.onerror = el.onpause = null;
+      resolve(ok);
+    };
+    el.onended = () => done(true);
+    el.onpause = () => done(true); // stopped by stopSpeaking()
+    el.onerror = () => done(false);
+    el.src = url;
+    el.currentTime = 0;
+    el.play().catch(() => done(false));
+  });
+}
+
+/** Chrome loads its voices only when first asked; without them it reads in the default voice. */
+function voicesReady(): Promise<void> {
   const synth = window.speechSynthesis;
-  synth.cancel();
-  const u = new SpeechSynthesisUtterance(speakable(text));
-  const v = pickVoice();
-  if (v) u.voice = v;
-  u.lang = v?.lang ?? "en-CA";
-  u.rate = 0.9;
-  synth.speak(u);
+  if (synth.getVoices().length) return Promise.resolve();
+  return new Promise((resolve) => {
+    const go = () => {
+      synth.removeEventListener("voiceschanged", go);
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(go, 1500);
+    synth.addEventListener("voiceschanged", go);
+  });
+}
+
+function utter(text: string, lang: Lang): Promise<void> {
+  return new Promise((resolve) => {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice(lang);
+    if (v) u.voice = v;
+    u.lang = v?.lang ?? (lang === "fr" ? "fr-CA" : "en-CA");
+    u.rate = lang === "fr" ? 0.8 : 0.9;
+    // Safety net in case the browser never reports the end.
+    const timer = setTimeout(() => resolve(), 4000 + text.length * 150);
+    u.onend = u.onerror = () => {
+      clearTimeout(timer);
+      live.delete(u);
+      resolve();
+    };
+    live.add(u);
+    window.speechSynthesis.speak(u);
+  });
 }
 
 export function stopSpeaking() {
-  if (canSpeak()) window.speechSynthesis.cancel();
+  ticket++;
+  if (!canSpeak()) return;
+  window.speechSynthesis.cancel();
+  live.clear();
+  player?.pause();
 }

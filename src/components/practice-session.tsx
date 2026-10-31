@@ -178,7 +178,9 @@ function Session({
           <div className="rounded-2xl border bg-white p-4 lg:sticky lg:top-24">
             {q.passage && (
               <div className="flex items-start gap-3">
-                <p className="flex-1 text-xl leading-relaxed">{q.passage}</p>
+                <p className="flex-1 text-xl leading-relaxed">
+                  <RichText text={q.passage} />
+                </p>
                 <SpeakButton text={q.passage} />
               </div>
             )}
@@ -197,7 +199,9 @@ function Session({
           {difficulty === "easy" && q.hint && !locked && (
             <div className="mb-4">
               {showHint ? (
-                <p className="rounded-xl border-l-4 border-amber-300 bg-white p-3 text-lg">{q.hint}</p>
+                <p className="rounded-xl border-l-4 border-amber-300 bg-white p-3 text-lg">
+                  <RichText text={q.hint} />
+                </p>
               ) : (
                 <button type="button" onClick={() => setShowHint(true)} className="rounded-full border-2 border-border bg-white px-4 py-2 text-base font-bold text-muted-foreground">
                   Show a hint
